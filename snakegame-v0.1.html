@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+   
+  <title>Wonjun's HTML Game</title>
+  <meta charset="UTF-8">
+   <!-- 페이지 스타일 설정 -->
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      background: rgb(0, 0, 0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas {
+      border: 1px solid rgb(255, 255, 255);
+      display: block;
+    }
+
+    #info {
+      color: white;
+      font-family: Arial, sans-serif;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+  
+<body>
+  <div id="info">
+    <span id="score">Score: 0</span>
+  </div>
+  <canvas width="400" height="400" id="game"></canvas>
+  <script>
+    // 기본 변수 선언
+    var canvas = document.getElementById("game");// 캔버스 변수 초기화
+    var context = canvas.getContext("2d");// 캔버스 그리기 컨텍스트 초기화
+    var scoreElement = document.getElementById("score"); // 점수 변수 초기화
+    
+    var grid = 16; // 그리드 사이즈 변수 초기화
+    var count = 0; // 프레임 카운터 변수 초기화
+    var score = 0; // 점수 변수 초기화
+ 
+    // 점수 업데이트하고 화면에 출력
+    function updateScore() {
+      scoreElement.innerText = `Score: ${score}`;
+    }
+
+    // 스네이크 객체 생성
+    var snake = {
+      x: 160,
+      y: 160,
+      dx: grid,
+      dy: 0,
+      cells: [],
+      maxCells: 4
+    };
+
+    // 사과 객체 생성
+    var apple = {
+      x: 320,
+      y: 320
+    };
+
+    function getRandomInt(min, max) {
+       // 무작위 정수 생성
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    function endGame() {
+            // 게임 오버 화면 표시
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.font = "24px Arial";
+      context.fillStyle = "white";
+      context.textBaseline = "middle";
+      context.textAlign = "center";
+
+      context.fillText("Game Over!", canvas.width / 2, canvas.height / 2 - 24);
+      context.fillText("Press any key to restart.", canvas.width / 2, canvas.height / 2 + 24);
+      document.addEventListener("keydown", restartGame);
+    }
+
+    function restartGame(e) {
+            // 게임 재시작
+      document.location.reload();
+    }
+
+    function loop() {
+            // 게임 메인 루프
+      requestAnimationFrame(loop);
+
+      if (++count < 4) {
+        return;
+      }
+      // 캔버스 경계 처리
+      count = 0;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      snake.x += snake.dx;
+      snake.y += snake.dy;
+
+      if (snake.x < 0) {
+        snake.x = canvas.width - grid;
+      } else if (snake.x >= canvas.width) {
+        snake.x = 0;
+      }
+
+      if (snake.y < 0) {
+        snake.y = canvas.height - grid;
+      } else if (snake.y >= canvas.height) {
+        snake.y = 0;
+      }
+
+      snake.cells.unshift({ x: snake.x, y: snake.y });
+
+      if (snake.cells.length > snake.maxCells) {
+        snake.cells.pop();
+      }
+
+      context.fillStyle = "white";  // 사과 색상 설정
+      context.fillRect(apple.x, apple.y, grid - 1, grid - 1); // 사과 그리기
+
+      context.fillStyle = "lime"; // 스네이크 색상 설정
+      snake.cells.forEach(function (cell, index) {
+        context.fillRect(cell.x, cell.y, grid - 1, grid - 1);// 스네이크 그리기
+
+        if (cell.x === apple.x && cell.y === apple.y) {
+          snake.maxCells++;// 스네이크 성장
+          score += 10;// 점수 증가
+          updateScore();// 점수 업데이트
+
+          apple.x = getRandomInt(0, 25) * grid; // 사과 위치 재설정
+          apple.y = getRandomInt(0, 25) * grid;
+        }
+
+        for (var i = index + 1; i < snake.cells.length; i++) {
+          if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+        // 스네이크 충돌 후 게임 오버 처리
+            endGame();
+          }
+        }
+      });
+    }
+    // 방향키 입력 리스너
+    document.addEventListener("keydown", function (e) {
+      if (e.which === 37 && snake.dx === 0) {
+        snake.dx = -grid;
+        snake.dy = 0;
+      } else if (e.which === 38 && snake.dy === 0) {
+        snake.dy = -grid;
+        snake.dx = 0;
+      } else if (e.which === 39 && snake.dx === 0) {
+        snake.dx = grid;
+        snake.dy = 0;
+      } else if (e.which === 40 && snake.dy === 0) {
+        snake.dy = grid;
+        snake.dx = 0;
+      }
+    });
+
+    
+    requestAnimationFrame(loop);// 메인 루프 호출
+
+    
+  </script>
+
+  <!--this program is made by "LW company"-->
+</body>
+
+</html>
